@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="lavender">#AA60C8</color>
+    <color name="lightLavender">#D69ADE</color>
+    <color name="verylightLavender">#EABDE6</color>
+    <color name="cream">#FFDFEF</color>
+    <color name="dellBule">#3A59D1</color>
+</resources>

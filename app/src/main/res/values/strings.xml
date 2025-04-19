@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">OnRoadHelp</string>
+    <string name="get_started">Get Started</string>
+    <string name="splash_desc">Get Assistance at right time and Righ place.</string>
+    <string name="login_text">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="login">Login</string>
+    <string name="name">Name</string>
+    <string name="login_here">Login Here</string>
+    <string name="register_here">Register Here</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="register_now">If you don\'t have an account,</string>
+    <string name="login_now">If you have an account,</string>
+    <string name="logout">Logout</string>
+    <string name="continue_as">Choose Your Role</string>
+    <string name="driver">Driver</string>
+    <string name="home">Home</string>
+    <string name="sos">SOS</string>
+    <string name="notification">Notification</string>
+    <string name="register_as_service_provider">Register as Service-Provider</string>
+    <string name="shop_name">Shop Name</string>
+
+</resources>

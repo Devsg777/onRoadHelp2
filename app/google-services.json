@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "504161941005",
+    "project_id": "onroadhelp-cb9de",
+    "storage_bucket": "onroadhelp-cb9de.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504161941005:android:c64ddb52ec25541ab10744",
+        "android_client_info": {
+          "package_name": "com.example.onroadhelp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "504161941005-csth8n02i709potph0ikvnbt0q6cgo7a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHg4Pvm6KlTfhHgYbuZ8UkyOprKZC08DI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "504161941005-csth8n02i709potph0ikvnbt0q6cgo7a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
