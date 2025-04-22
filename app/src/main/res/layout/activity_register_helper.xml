@@ -8,7 +8,9 @@
     android:gravity="center"
     android:layout_height="match_parent"
     android:padding="15dp"
-    tools:context=".RegisterUserActivity">
+    tools:context=".RegisterUserActivity"
+    style="@style/Widget.MyApp.TextInputLayout"
+    >
 
     <TextView
         android:text="@string/register_as_service_provider"
@@ -38,7 +40,8 @@
             android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/email" />
+            android:hint="@string/email"
+            android:inputType="textEmailAddress"  />
     </com.google.android.material.textfield.TextInputLayout>
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
@@ -47,11 +50,14 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/phone_no"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:hint="Phone No" />
+            android:layout_height="wrap_content"
+            android:hint="Phone No"
+            android:inputType="phone"/>
     </com.google.android.material.textfield.TextInputLayout>
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:endIconMode="password_toggle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password"
@@ -62,13 +68,52 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:endIconMode="password_toggle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password_conf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/confirm_password" />
+    </com.google.android.material.textfield.TextInputLayout>
+    <!-- Shop Type Dropdown -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/shop_type_layout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Shop Type"
+        app:endIconMode="dropdown_menu">
+
+        <AutoCompleteTextView
+            android:id="@+id/shop_type_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:importantForAccessibility="no"
+            android:textColor="@android:color/black" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Availability Dropdown -->
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/services_layout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Services Offered"
+        app:endIconMode="dropdown_menu">  <!-- Style match -->
+
+        <AutoCompleteTextView
+            android:id="@+id/services_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:textColor="@android:color/black"/>
     </com.google.android.material.textfield.TextInputLayout>
     <Button
         android:id="@+id/btn_pick_location"
@@ -85,6 +130,7 @@
         android:textColor="@android:color/darker_gray"
         android:paddingTop="5dp"
         android:textAlignment="center"/>
+
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -132,3 +178,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
+
+
+
+

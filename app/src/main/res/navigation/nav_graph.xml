@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.example.onroadhelp.ui.dashboard.DashboardFragment"
+        android:label="@string/title_dashboard">
+        <action
+            android:id="@+id/action_dashboardFragment_to_waitingForHelperFragment"
+            app:destination="@id/waitingForHelperFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/waitingForHelperFragment"
+        android:name="com.example.onroadhelp.ui.WaitingForHelperFragment"
+        android:label="Waiting for Helper">
+        <argument
+            android:name="requestId"
+            app:argType="string"
+            android:defaultValue="" />
+        <action
+            android:id="@+id/action_waitingForHelperFragment_to_navigationFragment"
+            app:destination="@id/navigationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigationFragment"
+        android:name="com.example.onroadhelp.NavigationFragment"
+        android:label="Navigation">
+        <argument
+            android:name="requestId"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="helperId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
+</navigation>

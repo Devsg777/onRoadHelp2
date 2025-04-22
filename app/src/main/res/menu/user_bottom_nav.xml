@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-<item android:id="@+id/nav_home"
-      android:icon="@drawable/home"
+
+    <item android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/baseline_sos_24"
+        android:title="@string/sos" />
+    <item android:id="@+id/navigation_home"
+      android:icon="@drawable/ic_dashboard_black_24dp"
       android:title="@string/home" />
-<item android:id="@+id/nav_profile"
-      android:icon="@drawable/baseline_sos_24"
-      android:title="@string/sos" />
-<item android:id="@+id/notification"
+<item android:id="@+id/navigation_request"
       android:icon="@drawable/bells"
-      android:title="@string/notification" />
+      android:title="Requests" />
+
+<item android:id="@+id/navigation_profile_settings"
+      android:icon="@drawable/user"
+      android:title="Proflie" />
+
 </menu>

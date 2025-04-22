@@ -96,35 +96,43 @@ public class RegisterUserActivity extends AppCompatActivity {
                     Toast.makeText(RegisterUserActivity.this,"Password not matching",Toast.LENGTH_SHORT).show();
                     return;
                 }
+                if(password.length() < 6){
+                    Toast.makeText(RegisterUserActivity.this,"Password should be at least 6 characters",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener( new OnCompleteListener< AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 progressBar.setVisibility(View.GONE);
                                 if (task.isSuccessful()) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    Toast.makeText(RegisterUserActivity.this, "Account created successfully.",
-                                            Toast.LENGTH_SHORT).show();
                                     // Add data to the Cloud firestore if the user is registered successfully
                                     FirebaseFirestore db = FirebaseFirestore.getInstance();
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    String userId = user.getUid();
-                                    Map<String, Object> user1 = new HashMap<>();
-                                    user1.put("name", name);
-                                    user1.put("email", email);
-                                    user1.put("phone_no", phoneNo);
+                                    FirebaseUser u= mAuth.getCurrentUser();
+                                    String userId = u.getUid();
+
+                                    Map<String, Object> user = new HashMap<>();
+                                    user.put("email", email);
+                                    user.put("role", "Driver");
+                                    Map<String, Object> driver = new HashMap<>();
+                                    driver.put("name", name);
+                                    driver.put("email", email);
+                                    driver.put("phone_no", phoneNo);
 
                                     db.collection("users").document(userId)
-                                            .set(user1)
+                                            .set(user);
+                                    db.collection("drivers").document(userId)
+                                            .set(driver)
                                             .addOnSuccessListener(aVoid -> {
                                                 Toast.makeText(RegisterUserActivity.this, "User Created Successfully.",
                                                         Toast.LENGTH_SHORT).show();
-                                                Intent intent = new Intent(RegisterUserActivity.this, LoginActivity.class);
+                                                Intent intent = new Intent(RegisterUserActivity.this, UserMainActivity.class);
                                                 startActivity(intent);
                                                 finish();
                                             })
                                             .addOnFailureListener(e -> {
-                                                Toast.makeText(RegisterUserActivity.this, "Failed to add user data.",
+                                                Toast.makeText(RegisterUserActivity.this, "Failed to add Driver data.",
                                                         Toast.LENGTH_SHORT).show();
                                             });
 

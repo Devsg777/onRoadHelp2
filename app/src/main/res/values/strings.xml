@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">OnRoadHelp</string>
+    <string name="google_maps_api_key">AIzaSyDTCrqAEMQwkqk3wc8hPlrkO89_pLmin0k</string>
     <string name="get_started">Get Started</string>
     <string name="splash_desc">Get Assistance at right time and Righ place.</string>
     <string name="login_text">Login</string>
@@ -22,5 +23,28 @@
     <string name="notification">Notification</string>
     <string name="register_as_service_provider">Register as Service-Provider</string>
     <string name="shop_name">Shop Name</string>
+    <string name="title_activity_user_main2">UserMainActivity2</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
 
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="title_activity_user_main">UserMainActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_helper_main">HelperMainActivity</string>
+    <string name="select_problem">Select your Problem</string>
+    <string name="sos_desc">Pin on the map to choose another location.*</string>
+    <string name="waiting_for_helper_message">Request sent. Waiting for a helper to accept. Request ID: %s</string>
+    <string name="waiting_for_helper_default_message">Request sent. Waiting for a helper to accept...</string>
+    <string name="no_request_id">Error: No Request ID found.</string>
+    <string name="request_status_updated">Request status updated: %s</string>
+    <string name="request_not_found">Error: SOS request not found.</string>
+    <string name="profile">Profile</string>
 </resources>
