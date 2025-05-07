@@ -47,4 +47,7 @@
     <string name="request_status_updated">Request status updated: %s</string>
     <string name="request_not_found">Error: SOS request not found.</string>
     <string name="profile">Profile</string>
+    <string name="active_request">Active Request</string>
+    <string name="select_vehicle_type">Select Vehicle Type</string>
+    <string name="vehicle_number">Vehicle Number</string>
 </resources>

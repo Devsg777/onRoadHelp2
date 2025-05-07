@@ -4,18 +4,15 @@ package com.example.onroadhelp.ui.home;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +27,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.onroadhelp.R;
 import com.example.onroadhelp.TrackHelper;
+import com.example.onroadhelp.ViewProfileActivity;
+import com.example.onroadhelp.adapter.NearbyServiceAdapter;
+import com.example.onroadhelp.model.ServiceProvider;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.libraries.places.api.Places;
@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Locale;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -65,8 +67,8 @@ public class HomeFragment extends Fragment {
     private ImageButton buttonCall;
 
     private RecyclerView nearbyProvidersRecyclerView;
-    private NearbyServiceProviderAdapter adapter;
-    private final List<NearbyServiceProvider> allNearbyProviders = new ArrayList<>();
+    private NearbyServiceAdapter adapter;
+    private final List<ServiceProvider> allNearbyProviders = new ArrayList<>();
     private final OkHttpClient httpClient = new OkHttpClient();
 
     private FusedLocationProviderClient fusedLocationClient;
@@ -82,6 +84,7 @@ public class HomeFragment extends Fragment {
     private String activeHelperName;
     private String activeHelperPhoneNo;
     private String activeHelperId;
+    private String activeHelperEmail;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -109,7 +112,7 @@ public class HomeFragment extends Fragment {
 
         nearbyProvidersRecyclerView = root.findViewById(R.id.recycler_nearby_providers);
         nearbyProvidersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new NearbyServiceProviderAdapter(allNearbyProviders);
+        adapter = new NearbyServiceAdapter();
         nearbyProvidersRecyclerView.setAdapter(adapter);
         nearbyProvidersRecyclerView.setNestedScrollingEnabled(false);
 
@@ -148,8 +151,10 @@ public class HomeFragment extends Fragment {
             });
 
             buttonViewProfile.setOnClickListener(v -> {
-                Toast.makeText(getContext(), "View Profile clicked for " + activeHelperName, Toast.LENGTH_SHORT).show();
-                // Implement view profile logic if needed
+//                Toast.makeText(getContext(), "View Profile clicked for " + activeHelperName, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(v.getContext(), ViewProfileActivity.class);
+                intent.putExtra("providerId",activeHelperEmail );
+                v.getContext().startActivity(intent);
             });
 
             buttonCancel.setOnClickListener(v -> {
@@ -171,6 +176,7 @@ public class HomeFragment extends Fragment {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String helperId = document.getString("acceptedHelperId");
+
                             if (helperId != null && !helperId.isEmpty()) {
                                 getHelperforId(helperId);
                                 return; // Assuming only one active request at a time
@@ -194,17 +200,19 @@ public class HomeFragment extends Fragment {
                         DocumentSnapshot document = task.getResult();
                         if (document.exists()) {
                             String helperName = document.getString("name");
-                            String helperPhoneNo = document.getString("phone_no");
-                            updateActiveRequest(helperName, helperPhoneNo, helperId);
+                            String helperPhoneNo = document.getString("contactNumber");
+                            String helper_email = document.getString("email");// Assuming "contactNumber"
+                            updateActiveRequest(helperName, helperPhoneNo, helperId,helper_email);
                         }
                     }
                 });
     }
 
-    private void updateActiveRequest(String helperName, String phone, String helperId) {
+    private void updateActiveRequest(String helperName, String phone, String helperId,String helper_email) {
         this.activeHelperName = helperName;
         this.activeHelperPhoneNo = phone;
         this.activeHelperId = helperId;
+        this.activeHelperEmail = helper_email;
         isActiveRequest = true;
         setupActiveRequest();
     }
@@ -249,7 +257,6 @@ public class HomeFragment extends Fragment {
             fetchApiProviders();
         }
     }
-
     private void fetchRegisteredProviders() {
         Log.d("FetchDebug", "Fetching registered providers...");
         firestore.collection("helpers")
@@ -257,18 +264,19 @@ public class HomeFragment extends Fragment {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && currentUserLocation != null) {
                         Log.d("FetchDebug", "Successfully fetched registered providers.");
-                        List<NearbyServiceProvider> tempProviders = new ArrayList<>();
+                        List<ServiceProvider> tempProviders = new ArrayList<>();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Log.d("FirestoreDebug", "Processing registered helper: " + document.getId());
                             String name = document.getString("name");
-                            String type = document.getString("type");
-                            String phoneNumber = document.getString("contactNumber");
+                            String email = document.getString("email");
+                            String type = document.getString("shop_type");
+                            String phoneNumber = document.getString("phone_no");
                             Double latitude = document.getDouble("lat");
-                            Double longitude = document.getDouble("lan");
+                            Double longitude = document.getDouble("lng");
 
                             Log.d("FirestoreData", "Registered - Name: " + name + ", Type: " + type + ", Phone: " + phoneNumber + ", Lat: " + latitude + ", Lon: " + longitude);
 
-                            if (latitude != null && longitude != null) {
+                            if (latitude != null && longitude != null && phoneNumber != null && !phoneNumber.isEmpty()) {
                                 double distanceKm = calculateDistance(
                                         currentUserLocation.getLatitude(),
                                         currentUserLocation.getLongitude(),
@@ -277,8 +285,9 @@ public class HomeFragment extends Fragment {
                                 );
 
                                 if (distanceKm <= MAX_DISTANCE_KM) {
-                                    NearbyServiceProvider provider = new NearbyServiceProvider(
-                                            name, distanceKm, type, phoneNumber, ProviderType.REGISTERED
+                                    ServiceProvider provider = new ServiceProvider(
+                                            name, email, distanceKm, type, phoneNumber, false
+                                            // isFromApi = false for registered
                                     );
                                     tempProviders.add(provider);
                                     Log.d("ListDebug", "Added registered provider: " + name + ", Distance: " + distanceKm);
@@ -286,7 +295,7 @@ public class HomeFragment extends Fragment {
                                     Log.d("DistanceDebug", "Registered provider " + name + " is too far: " + distanceKm + " km");
                                 }
                             } else {
-                                Log.w("FirestoreData", "Registered helper " + document.getId() + " has null lat/lon.");
+                                Log.w("FirestoreData", "Registered helper " + document.getId() + " has null lat/lon or phone.");
                             }
                         }
                         requireActivity().runOnUiThread(() -> {
@@ -327,7 +336,7 @@ public class HomeFragment extends Fragment {
                             JSONArray results = root.getJSONArray("results");
                             Log.d("API_Debug", "Nearby Search results for " + type + ": " + results.length());
 
-                            List<NearbyServiceProvider> tempProviders = new ArrayList<>();
+                            List<ServiceProvider> tempProviders = new ArrayList<>();
                             for (int i = 0; i < results.length(); i++) {
                                 JSONObject place = results.getJSONObject(i);
                                 String placeId = place.getString("place_id");
@@ -361,7 +370,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void fetchPlaceDetails(String placeId, String name, double distance, String type, List<NearbyServiceProvider> tempProviders) {
+    private void fetchPlaceDetails(String placeId, String name, double distance, String type, List<ServiceProvider> tempProviders) {
         String placeDetailsUrl = "https://maps.googleapis.com/maps/api/place/details/json"
                 + "?place_id=" + placeId
                 + "&fields=formatted_phone_number"
@@ -373,7 +382,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e("API", "Place Details API request failed for place ID: " + placeId, e);
-                NearbyServiceProvider provider = new NearbyServiceProvider(name, distance, type, "", ProviderType.API);
+                ServiceProvider provider = new ServiceProvider(name,"", distance, type, "", true); // isFromApi = true for API
                 tempProviders.add(provider);
                 Log.d("ListDebug", "Added API provider (no details): " + name + ", Distance: " + distance);
                 // Sorting will be handled after the main API call finishes
@@ -392,29 +401,29 @@ public class HomeFragment extends Fragment {
                         }
                         Log.d("API_Details", "Details for " + name + " - Phone: " + phoneNumber);
 
-                        NearbyServiceProvider provider = new NearbyServiceProvider(name, distance, type, phoneNumber, ProviderType.API);
+                        ServiceProvider provider = new ServiceProvider(name,"", distance, type, phoneNumber, true); // isFromApi = true for API
                         tempProviders.add(provider);
                         Log.d("ListDebug", "Added API provider: " + name + ", Distance: " + distance + ", Phone: " + phoneNumber);
 
                     } catch (JSONException e) {
                         Log.e("API", "JSON parsing error (Place Details)", e);
-                        NearbyServiceProvider provider = new NearbyServiceProvider(name, distance, type, "", ProviderType.API);
+                        ServiceProvider provider = new ServiceProvider(name, "",distance, type, "", true); // isFromApi = true for API
                         tempProviders.add(provider);
                         Log.d("ListDebug", "Added API provider (parse error): " + name + ", Distance: " + distance);
                     }
                 } else {
                     Log.w("API", "Place Details API request failed with code: " + response.code());
-                    NearbyServiceProvider provider = new NearbyServiceProvider(name, distance, type, "", ProviderType.API);
+                    ServiceProvider provider = new ServiceProvider(name, "",distance, type, "", true); // isFromApi = true for API
                     tempProviders.add(provider);
                     Log.d("ListDebug", "Added API provider (API error): " + name + ", Distance: " + distance);
                 }
+                // Sorting will
                 // Sorting will be handled after the main API call finishes
             }
         });
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-
         float[] results = new float[1];
         Location.distanceBetween(lat1, lon1, lat2, lon2, results);
         return results[0] / 1000;
@@ -422,97 +431,7 @@ public class HomeFragment extends Fragment {
 
     private void sortAndUpdateList() {
         Log.d("ListSortDebug", "Sorting and updating list. Size: " + allNearbyProviders.size());
-        Collections.sort(allNearbyProviders, (p1, p2) -> Double.compare(p1.distance, p2.distance));
-        adapter.notifyDataSetChanged();
-    }
-
-    private static class NearbyServiceProvider {
-        String name;
-        double distance;
-        String type;
-        String phoneNumber;
-        ProviderType providerType;
-
-        public NearbyServiceProvider(String name, double distance, String type, String phoneNumber, ProviderType providerType) {
-            this.name = name;
-            this.distance = distance;
-            this.type = type;
-            this.phoneNumber = phoneNumber;
-            this.providerType = providerType;
-        }
-    }
-
-    private enum ProviderType {
-        REGISTERED,
-        API
-    }
-
-    private static class NearbyServiceProviderAdapter extends RecyclerView.Adapter<NearbyServiceProviderAdapter.ViewHolder> {
-        private final List<NearbyServiceProvider> providerList;
-
-        public NearbyServiceProviderAdapter(List<NearbyServiceProvider> providerList) {
-            this.providerList = providerList;
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_nearby_service, parent, false);
-            return new ViewHolder(itemView);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            NearbyServiceProvider provider = providerList.get(position);
-            Log.d("AdapterDebug", "Binding at position " + position + ": Name=" + provider.name +
-                    ", Distance=" + provider.distance + ", Type=" + provider.type + ", Phone=" + provider.phoneNumber);
-            holder.nameTextView.setText(provider.name);
-            holder.distanceTextView.setText(String.format("%.2f km", provider.distance));
-            holder.typeTextView.setText(provider.type);
-            holder.phoneTextView.setText(provider.phoneNumber);
-
-            if (provider.providerType == ProviderType.API && !TextUtils.isEmpty(provider.phoneNumber)) {
-                holder.callButton.setVisibility(View.VISIBLE);
-                holder.callButton.setOnClickListener(v -> {
-                    Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                    callIntent.setData(Uri.parse("tel:" + provider.phoneNumber));
-                    v.getContext().startActivity(callIntent);
-                });
-            } else {
-                holder.callButton.setVisibility(View.GONE);
-            }
-
-            if (provider.providerType == ProviderType.REGISTERED) {
-                holder.itemView.setBackgroundColor(Color.parseColor("#E0F7FA"));
-                holder.providerIcon.setImageResource(R.drawable.breakdown);
-                holder.providerIcon.setVisibility(View.VISIBLE);
-            } else {
-                holder.itemView.setBackgroundColor(Color.parseColor("#F0F4C3"));
-                holder.providerIcon.setImageResource(R.drawable.icons8_google);
-                holder.providerIcon.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return providerList.size();
-        }
-
-        public static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView nameTextView, distanceTextView, typeTextView, phoneTextView;
-            ImageButton callButton;
-            ImageView providerIcon;
-
-            public ViewHolder(@NonNull View itemView) {
-                super(itemView);
-                nameTextView = itemView.findViewById(R.id.text_provider_name);
-                distanceTextView = itemView.findViewById(R.id.text_provider_distance);
-                typeTextView = itemView.findViewById(R.id.text_provider_type);
-                phoneTextView = itemView.findViewById(R.id.text_provider_phone);
-                callButton = itemView.findViewById(R.id.button_call);
-                providerIcon = itemView.findViewById(R.id.image_provider_icon);
-            }
-        }
+        Collections.sort(allNearbyProviders, (p1, p2) -> Double.compare(p1.getDistance(), p2.getDistance()));
+        adapter.setProviders(new ArrayList<>(allNearbyProviders)); // Pass a new list to avoid potential modification issues
     }
 }

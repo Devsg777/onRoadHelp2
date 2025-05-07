@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -118,8 +119,14 @@ public class DashboardFragment extends Fragment {
         }
 
         AutoCompleteTextView problemDropdown = binding.shopTypeDropdown;
-        String[] problems = {"Flat Tire", "Engine Issue", "Accident","Other",};
+        String[] problems = {"Flat Tire", "Engine Issue", "Accident", "Battery Issue", "Fuel Issue", "Lockout", "Other"};
         problemDropdown.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, problems));
+
+        AutoCompleteTextView vehicleTypeDropdown = binding.vehicleTypeDropdown;
+        String[] vehicleTypes = {"Car", "Bike", "Truck","Van","Bus","EV-Car","EV-Bike","Other"};
+        vehicleTypeDropdown.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, vehicleTypes));
+
+        EditText vehicleNumber = binding.vehicleNumber;
 
         sosButton = binding.sosButton;
         progressBar = binding.progressBar;
@@ -134,15 +141,20 @@ public class DashboardFragment extends Fragment {
                 Toast.makeText(getContext(), "Please select a problem!", Toast.LENGTH_SHORT).show();
                 return;
             }
+            String vehicleNo = vehicleNumber.getText().toString();
+            String vehicleType = vehicleTypeDropdown.getText().toString();
+            if (currentRequestId != null) {
+                Toast.makeText(getContext(), "You already have a pending SOS request!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             sosButton.setEnabled(false);
             progressBar.setVisibility(View.VISIBLE);
-            sendSOSRequest(selectedLocation, selectedProblem);
+            sendSOSRequest(selectedLocation, selectedProblem, vehicleNo, vehicleType);
         });
 
         return root;
     }
-
-
 
     @Override
     public void onDestroyView() {
@@ -244,7 +256,7 @@ public class DashboardFragment extends Fragment {
                 });
     }
 
-    private void sendSOSRequest(LatLng location, String problem) {
+    private void sendSOSRequest(LatLng location, String problem, String vehicleNo, String vehicleType) {
         Toast.makeText(getContext(), "SOS Requesting...", Toast.LENGTH_SHORT).show();
 
         String userId = mAuth.getCurrentUser().getUid();
@@ -257,6 +269,8 @@ public class DashboardFragment extends Fragment {
         sosRequest.put("problem", problem);
         sosRequest.put("status", "pending_acceptance"); // Initial status
         sosRequest.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
+        sosRequest.put("vehicleNo", vehicleNo); // Placeholder for vehicle number
+        sosRequest.put("vehicleType",vehicleType); // Placeholder for vehicle type
 
         db.collection("sos_requests")
                 .add(sosRequest)

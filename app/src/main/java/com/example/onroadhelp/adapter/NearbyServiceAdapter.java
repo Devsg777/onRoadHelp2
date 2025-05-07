@@ -5,10 +5,13 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.onroadhelp.R;
+import com.example.onroadhelp.ViewProfileActivity; // Import the new activity
 import com.example.onroadhelp.databinding.ItemNearbyServiceBinding;
 import com.example.onroadhelp.model.ServiceProvider;
 
@@ -47,10 +50,33 @@ public class NearbyServiceAdapter extends RecyclerView.Adapter<NearbyServiceAdap
     static class ProviderViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemNearbyServiceBinding binding;
+        private final ImageView providerIconImageView;
 
         public ProviderViewHolder(ItemNearbyServiceBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+            this.providerIconImageView = binding.imageProviderIcon;
+
+            // Set OnClickListener for the item view to open the profile
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    ServiceProvider provider = ((NearbyServiceAdapter) getBindingAdapter()).providerList.get(position);
+                    if (!provider.isFromApi()) { // Only for registered providers
+                        Intent intent = new Intent(v.getContext(), ViewProfileActivity.class);
+                        // Assuming your ServiceProvider model for registered providers has an 'id' field
+                        // You'll need to fetch this ID in your HomeFragment when retrieving data
+                        // and store it in the ServiceProvider object.
+                        // For now, let's assume you add a 'providerId' field.
+                        // intent.putExtra("providerId", provider.getProviderId());
+                        // Replace the above line with how you access the registered provider's ID
+
+                        // Temporary way to pass a unique identifier (e.g., name)
+                        intent.putExtra("providerId", provider.getEmail());
+                        v.getContext().startActivity(intent);
+                    }
+                }
+            });
         }
 
         public void bind(ServiceProvider provider) {
@@ -58,10 +84,10 @@ public class NearbyServiceAdapter extends RecyclerView.Adapter<NearbyServiceAdap
             binding.textProviderType.setText(provider.getType());
             binding.textProviderDistance.setText(String.format(Locale.getDefault(), "%.2f km", provider.getDistance()));
 
-            if (provider.isFromApi()) {
+            if (provider.getPhone() != null && !provider.getPhone().isEmpty()) {
                 binding.textProviderPhone.setVisibility(View.VISIBLE);
                 binding.buttonCall.setVisibility(View.VISIBLE);
-                binding.textProviderPhone.setText(provider.getPhone() != null ? provider.getPhone() : "N/A");
+                binding.textProviderPhone.setText(provider.getPhone());
 
                 binding.buttonCall.setOnClickListener(v -> {
                     String phone = provider.getPhone();
@@ -72,11 +98,17 @@ public class NearbyServiceAdapter extends RecyclerView.Adapter<NearbyServiceAdap
                     }
                 });
 
-                binding.imageProviderIcon.setVisibility(View.VISIBLE); // Optional: show an icon for API sources
+                providerIconImageView.setVisibility(View.VISIBLE);
+                if (provider.isFromApi()) {
+                    providerIconImageView.setImageResource(R.drawable.icons8_google);
+                } else {
+                    providerIconImageView.setImageResource(R.drawable.breakdown);
+                }
+
             } else {
                 binding.textProviderPhone.setVisibility(View.GONE);
                 binding.buttonCall.setVisibility(View.GONE);
-                binding.imageProviderIcon.setVisibility(View.GONE);
+                providerIconImageView.setVisibility(View.GONE);
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.onroadhelp.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,68 +47,7 @@ public class SOSRequestAdapter extends RecyclerView.Adapter<SOSRequestAdapter.SO
     @Override
     public void onBindViewHolder(@NonNull SOSRequestViewHolder holder, int position) {
         SOSRequest currentRequest = sosRequestList.get(position);
-        holder.textProblem.setText(currentRequest.getProblem());
-        holder.textLocation.setText(String.format(Locale.getDefault(), "Latitude: %.2f, Longitude: %.2f",
-                currentRequest.getLocation().getLatitude(), currentRequest.getLocation().getLongitude()));
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        holder.textTimestamp.setText("Timestamp: " + sdf.format(currentRequest.getTimestamp()));
-        holder.textStatus.setText("Status: " + currentRequest.getStatus());
-
-        if (currentRequest.getStatus().equals("pending")) {
-            holder.buttonAccept.setVisibility(View.VISIBLE);
-            holder.buttonComplete.setVisibility(View.GONE);
-            holder.buttonAccept.setOnClickListener(v -> {
-                acceptSOSRequest(currentRequest.getRequestId(), position);
-            });
-            holder.itemView.setOnClickListener(null);
-            holder.itemView.setClickable(false);
-        } else if (currentRequest.getStatus().equals("accepted") && currentRequest.getAcceptedHelperId() != null && currentRequest.getAcceptedHelperId().equals(helperId)) {
-            holder.buttonAccept.setVisibility(View.GONE);
-            holder.buttonComplete.setVisibility(View.VISIBLE);
-            holder.buttonComplete.setOnClickListener(v -> {
-                completeSOSRequest(currentRequest.getRequestId(), position);
-            });
-            holder.itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onItemClick(currentRequest);
-                }
-            });
-            holder.itemView.setClickable(true);
-        } else {
-            holder.buttonAccept.setVisibility(View.GONE);
-            holder.buttonComplete.setVisibility(View.GONE);
-            holder.itemView.setOnClickListener(null);
-            holder.itemView.setClickable(false);
-        }
-    }
-
-    private void acceptSOSRequest(String requestId, int position) {
-        db.collection("sos_requests").document(requestId)
-                .update("status", "accepted", "acceptedHelperId", helperId)
-                .addOnSuccessListener(aVoid -> {
-                    SOSRequest updatedRequest = sosRequestList.get(position);
-                    updatedRequest.setStatus("accepted");
-                    updatedRequest.setAcceptedHelperId(helperId);
-                    notifyItemChanged(position);
-                })
-                .addOnFailureListener(e -> {
-                    // Handle the error
-                });
-    }
-
-    private void completeSOSRequest(String requestId, int position) {
-        db.collection("sos_requests").document(requestId)
-                .update("status", "completed")
-                .addOnSuccessListener(aVoid -> {
-                    // Update the local list and notify the adapter
-                    sosRequestList.remove(position);
-                    notifyItemRemoved(position);
-                    // Optionally show a confirmation message
-                })
-                .addOnFailureListener(e -> {
-                    // Handle the error
-                });
+        holder.bind(currentRequest);
     }
 
     @Override
@@ -115,11 +55,13 @@ public class SOSRequestAdapter extends RecyclerView.Adapter<SOSRequestAdapter.SO
         return sosRequestList.size();
     }
 
-    public static class SOSRequestViewHolder extends RecyclerView.ViewHolder {
+    public class SOSRequestViewHolder extends RecyclerView.ViewHolder {
         TextView textProblem;
         TextView textLocation;
         TextView textTimestamp;
         TextView textStatus;
+        TextView textVehicleType; // Added Vehicle Type
+        TextView textVehicleNo; // Added Vehicle Model
         Button buttonAccept;
         Button buttonComplete; // Added Complete button
 
@@ -130,7 +72,127 @@ public class SOSRequestAdapter extends RecyclerView.Adapter<SOSRequestAdapter.SO
             textTimestamp = itemView.findViewById(R.id.text_timestamp);
             textStatus = itemView.findViewById(R.id.text_status);
             buttonAccept = itemView.findViewById(R.id.button_accept);
-            buttonComplete = itemView.findViewById(R.id.button_complete); // Initialize Complete button
+            buttonComplete = itemView.findViewById(R.id.button_complete);// Initialize Complete button
+            textVehicleType = itemView.findViewById(R.id.vehicle_type); // Initialize Vehicle Type
+            textVehicleNo = itemView.findViewById(R.id.vehicle_number); // Initialize Vehicle Model
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onItemClick(sosRequestList.get(position));
+                }
+            });
+
+            buttonAccept.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    SOSRequest request = sosRequestList.get(position);
+                    acceptSOSRequest(request.getRequestId(), position);
+                }
+            });
+
+            buttonComplete.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    SOSRequest request = sosRequestList.get(position);
+                    buttonComplete.setEnabled(false); // Disable the button on click
+                    completeSOSRequest(request.getRequestId(), position);
+                }
+            });
+        }
+
+        public void bind(SOSRequest request) {
+            textProblem.setText(request.getProblem());
+            textStatus.setText("Status: " + request.getStatus());
+
+            if (request.getLocation() != null) {
+                double latitude = request.getLocation().getLatitude();
+                double longitude = request.getLocation().getLongitude();
+                Log.d("SOSAdapter", "Latitude: " + latitude + ", Longitude: " + longitude);
+                String geoUri = String.format(Locale.US, "geo:%f,%f?q=%f,%f(Customer Location)", latitude, longitude, latitude, longitude);
+                textLocation.setText(geoUri);
+            } else {
+                textLocation.setText("Location not available");
+            }
+            textVehicleType.setText("Vehicle Type: " + request.getVehicleType()); // Set Vehicle Type
+            textVehicleNo.setText("Vehicle No: " + request.getVehicleNo()); // Set Vehicle Model
+
+            // Set the vehicle type and number
+            if (request.getVehicleType() != null) {
+                textVehicleType.setText("Vehicle Type: " + request.getVehicleType());
+            } else {
+                textVehicleType.setText("Vehicle Type: N/A");
+            }
+            if (request.getVehicleNo() != null) {
+                textVehicleNo.setText("Vehicle No: " + request.getVehicleNo());
+            } else {
+                textVehicleNo.setText("Vehicle No: N/A");
+            }
+
+            // Format the timestamp
+            if (request.getTimestamp() != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                textTimestamp.setText("Timestamp: " + sdf.format(request.getTimestamp()));
+            } else {
+                textTimestamp.setText("Timestamp: N/A");
+            }
+
+            if (request.getStatus().equals("pending_acceptance")) {
+                buttonAccept.setVisibility(View.VISIBLE);
+                buttonComplete.setVisibility(View.GONE);
+                itemView.setOnClickListener(null);
+                itemView.setClickable(false);
+            } else if (request.getStatus().equals("accepted") && request.getAcceptedHelperId() != null && request.getAcceptedHelperId().equals(helperId)) {
+                buttonAccept.setVisibility(View.GONE);
+                buttonComplete.setVisibility(View.VISIBLE);
+                itemView.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onItemClick(request);
+                    }
+                });
+                itemView.setClickable(true);
+            } else {
+                buttonAccept.setVisibility(View.GONE);
+                buttonComplete.setVisibility(View.GONE);
+                itemView.setOnClickListener(null);
+                itemView.setClickable(false);
+            }
+            buttonComplete.setEnabled(true); // Re-enable when the item is rebound (for scrolling)
+        }
+
+        private void acceptSOSRequest(String requestId, int position) {
+            db.collection("sos_requests").document(requestId)
+                    .update("status", "accepted", "acceptedHelperId", helperId)
+                    .addOnSuccessListener(aVoid -> {
+                        if (position >= 0 && position < sosRequestList.size()) {
+                            SOSRequest updatedRequest = sosRequestList.get(position);
+                            updatedRequest.setStatus("accepted");
+                            updatedRequest.setAcceptedHelperId(helperId);
+                            notifyItemChanged(position);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle the error
+                    });
+        }
+
+        private void completeSOSRequest(String requestId, int position) {
+            db.collection("sos_requests").document(requestId)
+                    .update("status", "completed")
+                    .addOnSuccessListener(aVoid -> {
+                        // Defensive check
+                        if (position >= 0 && position < sosRequestList.size()) {
+                            sosRequestList.remove(position);
+                            notifyItemRemoved(position);
+                        } else {
+                            Log.e("SOSAdapter", "Invalid position for removal: " + position + ", list size: " + sosRequestList.size());
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle the error
+                        if (getAdapterPosition() != RecyclerView.NO_POSITION) {
+                            buttonComplete.setEnabled(true); // Re-enable on failure
+                        }
+                    });
         }
     }
 }

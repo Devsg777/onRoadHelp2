@@ -13,7 +13,9 @@ public class SOSRequest {
     @ServerTimestamp
     private Date timestamp;
     private String status;
-    private String acceptedHelperId; // Add this field
+    private String acceptedHelperId;// Add this field
+    private String vehicleNo; // Added Vehicle Model
+    private String vehicleType; // Added Vehicle Type
 
     // Default constructor (required by Firestore)
     public SOSRequest() {
@@ -95,5 +97,18 @@ public class SOSRequest {
     // Setter for acceptedHelperId (if needed)
     public void setAcceptedHelperId(String acceptedHelperId) {
         this.acceptedHelperId = acceptedHelperId;
+    }
+
+    public String getVehicleNo() {
+        return vehicleNo;
+    }
+    public void setVehicleNo(String vehicleNo) {
+        this.vehicleNo = vehicleNo;
+    }
+    public String getVehicleType() {
+        return vehicleType;
+    }
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
     }
 }

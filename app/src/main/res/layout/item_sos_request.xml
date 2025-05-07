@@ -21,6 +21,18 @@
             android:textSize="18sp"
             android:textStyle="bold"
             tools:text="Flat Tire" />
+        <TextView
+            android:id="@+id/vehicle_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            tools:text="Car" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/vehicle_number"
+            android:layout_marginTop="8dp"
+            tools:text="KA 01 AB 1234" />
 
         <TextView
             android:id="@+id/text_status"
@@ -36,6 +48,8 @@
             android:layout_marginTop="8dp"
             android:autoLink="map"
             android:linksClickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             tools:text="geo:12.97,77.59?q=12.97,77.59(Current Location)" />
 
         <TextView

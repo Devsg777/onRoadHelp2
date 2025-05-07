@@ -1,29 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@android:color/white"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:background="#F0F0F0"
+        android:padding="16dp"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/helperNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold"
             tools:text="Helper Name" />
 
@@ -31,8 +25,9 @@
             android:id="@+id/helperVehicleTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="16sp"
             android:layout_marginTop="4dp"
-            tools:text="Vehicle (Number)" />
+            tools:text="Vehicle: Bike" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -45,29 +40,50 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Distance:"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/distanceTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="2.5 km" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="1.5 km" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_weight="1"
                 android:text="ETA:"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/etaTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 tools:text="5 mins" />
-
         </LinearLayout>
-
     </LinearLayout>
 
-</FrameLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+</LinearLayout>

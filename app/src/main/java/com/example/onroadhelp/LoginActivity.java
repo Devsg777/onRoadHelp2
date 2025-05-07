@@ -17,6 +17,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.onroadhelp.services.LocationTrackingService;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
@@ -151,10 +152,12 @@ public class LoginActivity extends AppCompatActivity {
                                                                     if (role.equals("Helper")) {
                                                                         Intent intent = new Intent(LoginActivity.this, HelperMainActivity.class);
                                                                         startActivity(intent);
+                                                                        startLocationTrackingService();
                                                                         finish();
                                                                     } else {
                                                                         Intent intent = new Intent(LoginActivity.this, UserMainActivity.class);
                                                                         startActivity(intent);
+                                                                        stopLocationTrackingService();
                                                                         finish();
                                                                     }
                                                                 } else {
@@ -173,9 +176,6 @@ public class LoginActivity extends AppCompatActivity {
                                                     }
                                                 });
                                     }
-
-                                    Intent intent = new Intent(LoginActivity.this, UserMainActivity.class);
-                                    startActivity(intent);
                                     finish();
 
                                 } else {
@@ -188,5 +188,19 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void startLocationTrackingService() {
+        Intent serviceIntent = new Intent(this, LocationTrackingService.class);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+    }
+
+    private void stopLocationTrackingService() {
+        Intent serviceIntent = new Intent(this, LocationTrackingService.class);
+        stopService(serviceIntent);
     }
 }

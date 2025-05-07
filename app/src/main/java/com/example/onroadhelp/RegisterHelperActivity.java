@@ -19,6 +19,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.onroadhelp.services.LocationTrackingService;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -173,14 +174,14 @@ public class RegisterHelperActivity extends AppCompatActivity {
 
     private void registerUser(String name, String email, String phoneNo, String password, String shopType,  String services, String location) {
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             // Add data to the Cloud firestore if the user is registered successfully
                             FirebaseFirestore db = FirebaseFirestore.getInstance();
-                            FirebaseUser u= mAuth.getCurrentUser();
+                            FirebaseUser u = mAuth.getCurrentUser();
                             String userId = u.getUid();
 
                             Map<String, Object> user = new HashMap<>();
@@ -204,6 +205,7 @@ public class RegisterHelperActivity extends AppCompatActivity {
                                                 Toast.LENGTH_SHORT).show();
                                         Intent intent = new Intent(RegisterHelperActivity.this, HelperMainActivity.class);
                                         startActivity(intent);
+                                        startLocationTrackingService();
                                         finish();
                                     })
                                     .addOnFailureListener(e -> {
@@ -218,10 +220,19 @@ public class RegisterHelperActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
 
-        // After successful registration, you can navigate to another activity
-        Intent intent = new Intent(RegisterHelperActivity.this, HelperMainActivity.class);
-        startActivity(intent);
-        finish();
+    private void startLocationTrackingService() {
+        Intent serviceIntent = new Intent(this, LocationTrackingService.class);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+    }
+
+    private void stopLocationTrackingService() {
+        Intent serviceIntent = new Intent(this, LocationTrackingService.class);
+        stopService(serviceIntent);
     }
 }

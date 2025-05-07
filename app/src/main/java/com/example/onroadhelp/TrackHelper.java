@@ -17,7 +17,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -53,8 +52,8 @@ public class TrackHelper extends FragmentActivity implements OnMapReadyCallback 
         helperId = getIntent().getStringExtra("helperId");
         double userLat = getIntent().getDoubleExtra("userLat", 0.0);
         double userLng = getIntent().getDoubleExtra("userLng", 0.0);
-        String helperName = getIntent().getStringExtra("helperName");
-        String helperVehicle = "Bike";
+        helperName = getIntent().getStringExtra("helperName");
+        String helperVehicle = "Bike"; // You might fetch this from Firestore as well
 
         userLatLng = new LatLng(userLat, userLng);
         helperNameTextView.setText(helperName);
@@ -98,8 +97,11 @@ public class TrackHelper extends FragmentActivity implements OnMapReadyCallback 
                                 LatLng helperLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                                 updateMap(helperLatLng);
                                 updateDistanceAndETA(helperLatLng);
-                                if (name != null) helperNameTextView.setText(name);
-                                if (vehicle != null) helperVehicleTextView.setText(vehicle);
+                                if (name != null && !name.isEmpty() && !name.equals(helperName)) {
+                                    helperNameTextView.setText(name);
+                                    helperName = name;
+                                }
+                                if (vehicle != null) helperVehicleTextView.setText("Vehicle: " + vehicle);
                             } else {
                                 Log.d("TrackHelper", "Helper location is null in Firestore.");
                                 Toast.makeText(TrackHelper.this, "Helper location not yet available.", Toast.LENGTH_SHORT).show();
@@ -116,13 +118,14 @@ public class TrackHelper extends FragmentActivity implements OnMapReadyCallback 
     }
 
     private void updateMap(LatLng helperLatLng) {
+        if (mMap == null) return;
         mMap.clear();
         mMap.addMarker(new MarkerOptions().position(userLatLng).title("Your Location"));
-        mMap.addMarker(new MarkerOptions().position(helperLatLng).title("Helper Location"));
+        mMap.addMarker(new MarkerOptions().position(helperLatLng).title(helperName));
 
         PolylineOptions polylineOptions = new PolylineOptions()
                 .add(userLatLng, helperLatLng)
-                .color(getResources().getColor(R.color.lavender))
+                .color(getResources().getColor(R.color.lavender)) // Ensure you have this color defined
                 .width(10);
         mMap.addPolyline(polylineOptions);
 
